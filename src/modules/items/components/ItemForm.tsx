@@ -3,7 +3,9 @@
 import { useState, FormEvent } from "react";
 import { appConfig } from "@/config/appConfig";
 import { DynamicField } from "@/components/shared/DynamicField";
-import { createItem, updateItem } from "@/services/itemService"; 
+import { useArtworkStore } from "@/store/useArtworkStore";
+import { useStore } from "@/store/useStore";
+import toast from "react-hot-toast";
 
 type Props = {
   initialData?: Record<string, any>;
@@ -12,8 +14,11 @@ type Props = {
 
 export const ItemForm = ({ initialData = {}, onSuccess }: Props) => {
   const [formData, setFormData] = useState<Record<string, any>>(initialData);
-  const [loading, setLoading] = useState(false);
+  const [localLoading, setLocalLoading] = useState(false);
   const [error, setError] = useState<string>("");
+  
+  const { addArtwork, updateArtwork } = useArtworkStore();
+  const user = useStore((state) => state.user);
 
   const handleChange = (name: string, value: any) => {
     // If it's a file, mock a URL object for immediate display capability natively
@@ -33,30 +38,39 @@ export const ItemForm = ({ initialData = {}, onSuccess }: Props) => {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setLocalLoading(true);
     setError("");
 
     try {
       // Basic Required Field Validation
       for (const field of appConfig.fields) {
+        if (field.type === "boolean") continue; // false is a valid value
         if (!formData[field.name] || formData[field.name] === "") {
           throw new Error(`Please provide a value for ${field.label}.`);
         }
       }
 
-      // Execute actual POST/PUT request via Axios
       if (formData.id) {
-        await updateItem(formData);
+        await updateArtwork(formData.id, formData);
+        toast.success("Artwork updated perfectly.");
       } else {
-        await createItem(formData);
+        // Automatically inject user info as artist
+        const payload = {
+          ...formData,
+          artistId: user?.uid || "anonymous",
+          artistName: user?.name || "Anonymous Artist",
+        };
+        await addArtwork(payload as any);
+        toast.success("Artwork listed successfully. Now in portfolio.");
         setFormData({}); // Need to clear form if creating new item
       }
       
       onSuccess?.();
     } catch (err: any) {
       setError(err.message || "Something went wrong while saving the item.");
+      toast.error(err.message || "Something went wrong while saving the item.");
     } finally {
-      setLoading(false);
+      setLocalLoading(false);
     }
   };
 
@@ -89,10 +103,10 @@ export const ItemForm = ({ initialData = {}, onSuccess }: Props) => {
 
       <button
         type="submit"
-        disabled={loading}
-        className="w-full bg-blue-600 disabled:bg-blue-400 text-white font-medium px-4 py-3 rounded-lg hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        disabled={localLoading || !user}
+        className="w-full bg-violet-600 disabled:bg-violet-400 text-white font-bold px-4 py-3 rounded-xl hover:bg-violet-700 transition focus:outline-none focus:ring-4 focus:ring-violet-500/20 shadow-lg shadow-violet-500/30 disabled:cursor-not-allowed"
       >
-        {loading ? "Saving..." : (formData.id ? `Update ${appConfig.entity.name}` : `Create ${appConfig.entity.name}`)}
+        {!user ? "Please Log In to List" : localLoading ? "Saving..." : (formData.id ? `Update ${appConfig.entity.name}` : `Create ${appConfig.entity.name}`)}
       </button>
     </form>
   );

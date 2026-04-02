@@ -1,44 +1,19 @@
-import { BaseItem, ItemFilters } from '../types';
+import { ArtworkFilters } from '../types';
+import { useArtworkStore } from '@/store/useArtworkStore';
+import { Artwork } from '@/types/artwork';
 
 /**
  * A generic CRUD service for the marketplace entity.
- * In a real application, this would use fetch, axios, or a Firebase SDK.
- * For now, this mimics network requests with Promises and localStorage or in-memory array.
+ * Uses Zustand persistence to simulate a real database natively.
  */
-
-// Mock storage
-let mockItems: BaseItem[] = [
-  {
-    id: '1',
-    sellerId: 'user-1',
-    createdAt: new Date().toISOString(),
-    title: 'Example Listing 1',
-    description: 'This is a mocked item. It shows how the UI will look.',
-    price: 99.99,
-    condition: 'New', // Dynamic field
-    images: ['https://via.placeholder.com/600x400?text=Image+1'],
-  },
-  {
-    id: '2',
-    sellerId: 'user-2',
-    createdAt: new Date(Date.now() - 86400000).toISOString(),
-    title: 'Example Listing 2',
-    description: 'Another mocked item to demonstrate grids.',
-    price: 150.00,
-    condition: 'Used - Good', // Dynamic field
-    images: ['https://via.placeholder.com/600x400?text=Image+2'],
-  }
-];
-
 export const itemService = {
   /**
    * Fetch all items, optionally filtered
    */
-  async getItems(filters?: ItemFilters): Promise<BaseItem[]> {
-    // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 600));
+  async getItems(filters?: ArtworkFilters): Promise<Artwork[]> {
+    await new Promise((resolve) => setTimeout(resolve, 600)); // Simulate UI loading
     
-    let results = [...mockItems];
+    let results = useArtworkStore.getState().artworks;
     
     if (filters?.searchTerm) {
       const term = filters.searchTerm.toLowerCase();
@@ -48,44 +23,52 @@ export const itemService = {
       );
     }
     
-    // Add logic for dynamic attributes or price filters as needed...
-
     return results;
   },
 
   /**
    * Fetch a single item by ID
    */
-  async getItemById(id: string): Promise<BaseItem | null> {
+  async getItemById(id: string): Promise<Artwork | null> {
     await new Promise((resolve) => setTimeout(resolve, 400));
-    return mockItems.find((item) => item.id === id) || null;
+    return useArtworkStore.getState().artworks.find((item) => item.id === id) || null;
   },
 
   /**
    * Create a new item listing
    */
-  async createItem(itemData: Omit<BaseItem, 'id' | 'createdAt'>): Promise<BaseItem> {
+  async createItem(itemData: Omit<Artwork, 'id' | 'createdAt'>): Promise<Artwork> {
     await new Promise((resolve) => setTimeout(resolve, 800));
-    const newItem: BaseItem = {
+    
+    const store = useArtworkStore.getState();
+    const newItem: Artwork = {
       ...itemData,
       id: Math.random().toString(36).substr(2, 9),
       createdAt: new Date().toISOString(),
-    };
-    mockItems.push(newItem);
+    } as Artwork;
+    
+    store.setArtworks([...store.artworks, newItem]);
+    
     return newItem;
   },
 
   /**
    * Update an existing item
    */
-  async updateItem(id: string, updates: Partial<BaseItem>): Promise<BaseItem> {
+  async updateItem(id: string, updates: Partial<Artwork>): Promise<Artwork> {
     await new Promise((resolve) => setTimeout(resolve, 800));
-    const index = mockItems.findIndex((item) => item.id === id);
+    const store = useArtworkStore.getState();
+    const currentList = store.artworks;
+    
+    const index = currentList.findIndex((item) => item.id === id);
     if (index === -1) throw new Error('Item not found');
     
-    const updated = { ...mockItems[index], ...updates };
-    mockItems[index] = updated;
-    return updated;
+    const updatedList = [...currentList];
+    updatedList[index] = { ...updatedList[index], ...updates };
+    
+    store.setArtworks(updatedList);
+    
+    return updatedList[index];
   },
 
   /**
@@ -93,6 +76,7 @@ export const itemService = {
    */
   async deleteItem(id: string): Promise<void> {
     await new Promise((resolve) => setTimeout(resolve, 800));
-    mockItems = mockItems.filter((item) => item.id !== id);
+    const store = useArtworkStore.getState();
+    store.setArtworks(store.artworks.filter((item) => item.id !== id));
   }
 };

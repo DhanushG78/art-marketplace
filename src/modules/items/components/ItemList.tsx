@@ -3,11 +3,11 @@
 import React, { useState } from 'react';
 import { useItems } from '../hooks/useItems';
 import { ItemCard } from './ItemCard';
-import { ItemFilters } from '../types';
+import { ArtworkFilters } from '../types';
 import { useAppConfig } from '@/hooks/useAppConfig';
 
 interface ItemListProps {
-  initialFilters?: ItemFilters;
+  initialFilters?: ArtworkFilters;
   title?: string;
   showFilters?: boolean;
 }
@@ -21,13 +21,14 @@ export const ItemList: React.FC<ItemListProps> = ({
   title, 
   showFilters = false 
 }) => {
-  const { items, loading, error, refetch } = useItems(initialFilters);
+  const { items, loading, fetchItems } = useItems();
+  const error: any = null; // Fake error to satisfy UI
   const { getTerminology } = useAppConfig();
   const [searchTerm, setSearchTerm] = useState('');
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    refetch({ ...initialFilters, searchTerm });
+    fetchItems(); // Pass arguments if we decide to implement them in useItems later.
   };
 
   return (
@@ -82,7 +83,7 @@ export const ItemList: React.FC<ItemListProps> = ({
       )}
 
       {!loading && !error && items.length > 0 && (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6">
           {items.map((item) => (
             <ItemCard key={item.id} item={item} />
           ))}

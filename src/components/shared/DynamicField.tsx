@@ -77,15 +77,24 @@ export const DynamicField = ({ field, value, onChange }: Props) => {
 
     case "boolean":
       return (
-        <div className="mt-2 flex items-center">
-          <input
-            type="checkbox"
-            checked={!!value}
-            onChange={(e) => onChange(field.name, e.target.checked)}
-            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
+        <button
+          type="button"
+          role="switch"
+          aria-checked={!!value}
+          onClick={() => onChange(field.name, !value)}
+          className={`relative mt-1 inline-flex h-7 w-14 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 ${
+            value ? "bg-violet-600" : "bg-gray-200 dark:bg-gray-700"
+          }`}
+        >
+          <span
+            className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform duration-200 ${
+              value ? "translate-x-8" : "translate-x-1"
+            }`}
           />
-          <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">Yes</span>
-        </div>
+          <span className={`ml-16 text-sm font-semibold whitespace-nowrap ${value ? "text-violet-600 dark:text-violet-400" : "text-gray-500 dark:text-gray-400"}`}>
+            {value ? "Yes — Handmade ✋" : "No — Not Handmade"}
+          </span>
+        </button>
       );
 
     default:

@@ -1,73 +1,120 @@
+"use client";
+
 import Link from "next/link";
 import { useAppConfig } from "@/hooks/useAppConfig";
+import { useStore } from "@/store/useStore";
 
 export const Hero = () => {
-  const { appName, getTerminology } = useAppConfig();
+  const { appName } = useAppConfig();
+  const user = useStore((s) => s.user);
 
   return (
-    <div className="relative isolate overflow-hidden bg-white dark:bg-gray-950 px-6 pt-14 lg:px-8">
-      {/* Background gradients */}
-      <div
-        aria-hidden="true"
-        className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80"
-      >
-        <div
-          style={{
-            clipPath:
-              'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
-          }}
-          className="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 rotate-[30deg] bg-gradient-to-tr from-[#ff80b5] to-[#9089fc] opacity-30 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]"
+    <div className="relative min-h-[88vh] flex items-center justify-center overflow-hidden">
+
+      {/* ── Background Image ── */}
+      <div className="absolute inset-0 z-0">
+        <img
+          src="https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=1800&q=85"
+          alt="Art gallery background"
+          className="w-full h-full object-cover object-center"
         />
+        {/* dark + gradient overlay so text is always legible */}
+        <div className="absolute inset-0 bg-gradient-to-b from-gray-950/75 via-gray-900/60 to-gray-950/90" />
+        {/* subtle vignette */}
+        <div className="absolute inset-0 bg-radial-gradient pointer-events-none" />
       </div>
 
-      <div className="mx-auto max-w-3xl py-16 sm:py-24 lg:py-32 flex flex-col items-center text-center">
-        <div className="hidden sm:mb-8 sm:flex sm:justify-center">
-          <div className="relative rounded-full px-5 py-2 text-sm text-gray-600 dark:text-gray-300 ring-1 ring-gray-900/10 dark:ring-white/20 hover:ring-gray-900/20 dark:hover:ring-white/40 shadow-sm transition-all duration-300">
-            Announcing our next-generation platform.{' '}
-            <Link href="#" className="font-bold text-black dark:text-white group relative">
-              <span aria-hidden="true" className="absolute inset-0" />
-              Read more <span aria-hidden="true" className="inline-block transition-transform group-hover:translate-x-1">&rarr;</span>
-            </Link>
-          </div>
+      {/* ── Floating colour blobs for depth ── */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-violet-600/20 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-indigo-500/20 rounded-full blur-[100px] animate-pulse delay-700" />
+        <div className="absolute top-1/2 right-1/3 w-64 h-64 bg-rose-500/10 rounded-full blur-[80px]" />
+      </div>
+
+      {/* ── Content ── */}
+      <div className="relative z-10 mx-auto max-w-4xl px-6 py-28 flex flex-col items-center text-center">
+
+        {/* Badge */}
+        <div className="mb-6 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white/80 text-xs font-semibold tracking-wider uppercase shadow-lg">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          {user ? `Welcome back, ${(user as any).name || user.email?.split("@")[0]} 👋` : "The Premier Art Marketplace"}
         </div>
 
-        <h1 className="text-5xl font-black tracking-tight text-gray-900 dark:text-white sm:text-7xl mb-6 leading-tight">
-          Discover Premium <br className="hidden sm:block" />
-          <span className="text-black dark:text-white">
-            {getTerminology(2)}
+        {/* Heading */}
+        <h1 className="text-5xl sm:text-7xl font-black tracking-tight text-white mb-6 leading-[1.05]">
+          Discover & Collect{" "}
+          <span className="relative inline-block">
+            <span className="bg-gradient-to-r from-violet-400 via-fuchsia-400 to-indigo-400 bg-clip-text text-transparent">
+              Premium Art
+            </span>
+            {/* underline accent */}
+            <span className="absolute -bottom-1 left-0 right-0 h-1 bg-gradient-to-r from-violet-500 to-indigo-500 rounded-full opacity-60" />
           </span>
         </h1>
 
-        <p className="mt-6 text-lg/8 text-gray-600 dark:text-gray-400 max-w-xl mb-10">
-          The most secure and elevated marketplace for your curated collection. 
-          Buy, sell, and build seamlessly with {appName}.
+        <p className="text-lg sm:text-xl text-gray-300 max-w-2xl mb-10 leading-relaxed">
+          {user?.role === "artist"
+            ? `List your artworks, connect with collectors worldwide, and grow your creative business on ${appName}.`
+            : `Explore thousands of original paintings, sculptures, digital art and handmade crafts. Buy directly from the artists.`}
         </p>
 
-        <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
+        {/* CTA Buttons */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link
             href="#browse"
-            className="rounded-full bg-black dark:bg-white text-white dark:text-black px-10 py-4 text-sm font-bold shadow-xl hover:bg-gray-900 dark:hover:bg-gray-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl focus:ring-4 focus:ring-black/10 active:scale-95 w-full sm:w-auto text-center"
+            className="group relative px-8 py-4 rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-sm font-bold shadow-xl shadow-violet-500/40 hover:shadow-violet-500/60 transition-all hover:-translate-y-0.5 active:scale-95"
           >
-            Start Exploring
+            <span className="relative z-10 flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              Explore Artworks
+            </span>
+            {/* Shine effect */}
+            <span className="absolute inset-0 rounded-full bg-white/0 group-hover:bg-white/10 transition-colors" />
           </Link>
-          <Link href="/login" className="text-sm font-bold text-gray-900 dark:text-white px-8 py-4 rounded-full border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900 transition-all group flex items-center justify-center gap-2 w-full sm:w-auto">
-            Become a Seller
-            <span aria-hidden="true" className="group-hover:translate-x-1 transition-transform">&rarr;</span>
-          </Link>
+
+          {!user && (
+            <Link
+              href="/signup"
+              className="px-8 py-4 rounded-full bg-white/10 backdrop-blur-md border border-white/25 text-white text-sm font-bold hover:bg-white/20 transition-all hover:-translate-y-0.5 shadow-lg"
+            >
+              Become a Seller 🎨
+            </Link>
+          )}
+
+          {user?.role === "artist" && (
+            <a
+              href="#browse"
+              className="px-8 py-4 rounded-full bg-white/10 backdrop-blur-md border border-white/25 text-white text-sm font-bold hover:bg-white/20 transition-all hover:-translate-y-0.5 shadow-lg flex items-center gap-2"
+            >
+              🛒 Shop Artworks
+            </a>
+          )}
+        </div>
+
+        {/* Stats row */}
+        <div className="mt-16 flex flex-wrap items-center justify-center gap-10 text-center">
+          {[
+            { value: "2,400+", label: "Artworks" },
+            { value: "340+",   label: "Artists" },
+            { value: "18K+",   label: "Collectors" },
+            { value: "99%",    label: "Satisfaction" },
+          ].map((stat) => (
+            <div key={stat.label} className="flex flex-col">
+              <span className="text-3xl font-black text-white">{stat.value}</span>
+              <span className="text-sm text-gray-400 font-medium mt-0.5">{stat.label}</span>
+            </div>
+          ))}
         </div>
       </div>
 
-      <div
-        aria-hidden="true"
-        className="absolute inset-x-0 top-[calc(100%-13rem)] -z-10 transform-gpu overflow-hidden blur-3xl sm:top-[calc(100%-30rem)]"
-      >
-        <div
-          style={{
-            clipPath:
-              'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
-          }}
-          className="relative left-[calc(50%+3rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 bg-gradient-to-tr from-[#ff80b5] to-[#9089fc] opacity-30 sm:left-[calc(50%+36rem)] sm:w-[72.1875rem]"
-        />
+      {/* ── Scroll indicator ── */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-1.5 text-white/40">
+        <span className="text-xs font-medium tracking-widest uppercase">Scroll</span>
+        <div className="w-5 h-9 rounded-full border border-white/20 flex items-start justify-center p-1.5">
+          <div className="w-1 h-2.5 rounded-full bg-white/60 animate-bounce" />
+        </div>
       </div>
     </div>
   );

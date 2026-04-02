@@ -1,76 +1,82 @@
-import { NextResponse } from 'next/server';
-import { itemsDb } from '@/lib/memoryDb';
-import { BaseItem } from '@/modules/items';
+import { NextResponse } from "next/server";
+import {
+  getItemsFromFirestore,
+  addItemToFirestore,
+  updateItemInFirestore,
+  deleteItemFromFirestore,
+} from "@/services/firestoreService";
 
 /**
  * GET /api/items
- * Fetch all items, or supply a '?search=' query param to filter results.
+ * Fetch all artworks from Firestore (falls back to mock store if empty).
  */
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const search = searchParams.get('search')?.toLowerCase();
+  try {
+    const { searchParams } = new URL(request.url);
+    const search = searchParams.get("search")?.toLowerCase() ?? "";
 
-  let results = [...itemsDb];
+    let items = await getItemsFromFirestore();
 
-  // Apply optional filtering logic based on the search term
-  if (search) {
-    results = results.filter((item) =>
-      item.title.toLowerCase().includes(search) ||
-      (item.description && item.description.toLowerCase().includes(search))
-    );
+    if (search) {
+      items = items.filter(
+        (item) =>
+          item.title.toLowerCase().includes(search) ||
+          (item.description ?? "").toLowerCase().includes(search)
+      );
+    }
+
+    return NextResponse.json(items);
+  } catch (error) {
+    console.error("[GET /api/items]", error);
+    return NextResponse.json({ error: "Failed to fetch artworks." }, { status: 500 });
   }
-
-  // Sort by newest first
-  results.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-
-  return NextResponse.json(results);
 }
 
 /**
  * POST /api/items
- * Create a new item listing.
+ * Create a new artwork stored in Firestore.
  */
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-
-    const newItem = {
-      id: Date.now().toString(),
-      ...body,
-      createdAt: new Date().toISOString(),
-    };
-
-    itemsDb.push(newItem);
-
-    return Response.json(newItem, { status: 201 });
+    const newItem = await addItemToFirestore(body);
+    return NextResponse.json(newItem, { status: 201 });
   } catch (error) {
-    return Response.json(
-      { error: 'Failed to create dynamic item.' },
-      { status: 500 }
-    );
+    console.error("[POST /api/items]", error);
+    return NextResponse.json({ error: "Failed to create artwork." }, { status: 500 });
   }
 }
 
+/**
+ * PUT /api/items
+ * Update an existing artwork in Firestore by ID (sent in body).
+ */
 export async function PUT(req: Request) {
-  const body = await req.json();
+  try {
+    const { id, ...updates } = await req.json();
+    if (!id) return NextResponse.json({ error: "Missing id." }, { status: 400 });
 
-  // Find and update item to comply with ESM immutability constraints
-  const index = itemsDb.findIndex((item) => item.id === body.id);
-  if (index !== -1) {
-    itemsDb[index] = { ...itemsDb[index], ...body };
+    await updateItemInFirestore(id, updates);
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("[PUT /api/items]", error);
+    return NextResponse.json({ error: "Failed to update artwork." }, { status: 500 });
   }
-
-  return Response.json({ success: true, item: itemsDb[index] });
 }
 
+/**
+ * DELETE /api/items
+ * Delete an artwork from Firestore by ID (sent in body).
+ */
 export async function DELETE(req: Request) {
-  const { id } = await req.json();
+  try {
+    const { id } = await req.json();
+    if (!id) return NextResponse.json({ error: "Missing id." }, { status: 400 });
 
-  // Find and remove item
-  const index = itemsDb.findIndex((item) => item.id === id);
-  if (index !== -1) {
-    itemsDb.splice(index, 1);
+    await deleteItemFromFirestore(id);
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("[DELETE /api/items]", error);
+    return NextResponse.json({ error: "Failed to delete artwork." }, { status: 500 });
   }
-
-  return Response.json({ success: true });
 }

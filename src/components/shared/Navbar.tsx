@@ -30,7 +30,7 @@ export const Navbar = () => {
             Home
           </Link>
 
-          {user?.role === "admin" && (
+          {(user?.role === "admin" || user?.role === "artist") && (
             <Link href="/dashboard" className="text-sm font-semibold text-blue-600 transition hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">
               Dashboard
             </Link>

@@ -7,10 +7,10 @@ import { itemsDb } from '@/lib/memoryDb';
  */
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = params.id;
+    const { id } = await context.params;
     const body = await request.json();
     
     // Find the item
@@ -39,10 +39,10 @@ export async function PUT(
  */
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = params.id;
+    const { id } = await context.params;
     const index = itemsDb.findIndex((item) => item.id === id);
 
     if (index === -1) {

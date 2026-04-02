@@ -1,21 +1,26 @@
-export interface BaseItem {
+export interface Artwork {
   id: string;
-  sellerId: string;
+  artistId: string;
   createdAt: string;
   title: string;
   price: number;
   description: string;
-  images: string[];
+  category: "painting" | "sculpture" | "craft" | "digital" | "photography";
+  artistName: string;
+  medium: string;
+  style: string;
+  dimensions: string;
+  isHandmade: boolean;
+  image: string;
   // Catch-all for any dynamic attributes defined in appConfig.entityFields
-  // e.g., mileage (Cars), bedrooms (Real Estate), brand (Products)
   [key: string]: any; 
 }
 
 // Filters that could be passed to the service/hook
-export interface ItemFilters {
+export interface ArtworkFilters {
   searchTerm?: string;
   minPrice?: number;
   maxPrice?: number;
-  sellerId?: string;
+  artistId?: string;
   attributes?: Record<string, string | number | boolean>;
 }
