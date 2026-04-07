@@ -11,7 +11,6 @@ ArtVault is a premium e-commerce platform designed for independent artists and a
 ### For Artists
 - **Role-Based Onboarding**: Register as an artist and get instant access to your specialized dashboard.
 - **Artwork Management**: Full CRUD operations for listings—upload titles, descriptions, dimensions, mediums, and styles.
-- **Sales Tracking**: Real-time status updates on sold artworks (WIP).
 - **Profile Customization**: Showcase your portfolio to potential buyers.
 
 ### For Buyers
